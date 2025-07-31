@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.MessagesForCar" parent="Theme.AppCompat.DayNight">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/automotive_blue</item>
+    </style>
+
+    <style name="Theme.MessagesForCar" parent="Base.Theme.MessagesForCar" />
+    
+    <!-- Voice activity theme with minimal UI -->
+    <style name="Theme.MessagesForCar.Voice" parent="Theme.MessagesForCar">
+        <item name="android:windowBackground">@color/automotive_background</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
+</resources>

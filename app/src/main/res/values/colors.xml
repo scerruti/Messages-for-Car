@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Automotive color palette -->
+    <color name="automotive_blue">#FF1976D2</color>
+    <color name="automotive_blue_dark">#FF0D47A1</color>
+    <color name="automotive_blue_light">#FF42A5F5</color>
+    <color name="automotive_accent">#FF4CAF50</color>
+    <color name="automotive_background">#FF121212</color>
+    <color name="automotive_surface">#FF1E1E1E</color>
+</resources>

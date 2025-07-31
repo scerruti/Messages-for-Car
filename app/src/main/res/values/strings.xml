@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Messages for Car</string>
+    <string name="voice_message_hint">Say your message</string>
+    <string name="listening">Listening...</string>
+    <string name="tap_to_speak">Tap to speak</string>
+    <string name="send_message">Send</string>
+    <string name="try_again">Try Again</string>
+    <string name="permission_required">Microphone permission is required for voice messaging</string>
+    <string name="setup_required">Setup Messages for Car by pairing with your phone</string>
+    <string name="pair_with_phone">Pair with Phone</string>
+    <string name="qr_code_instructions">Open Google Messages on your phone and scan the QR code (only when parked)</string>
+</resources>
