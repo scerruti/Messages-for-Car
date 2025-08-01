@@ -24,15 +24,24 @@
   - [ ] Battery usage optimization
 
 ## To Do
-- [ ] Fix QR code visibility in WebView (current issue)
-- [ ] Set up GitHub repository and CI/CD
-- [ ] Create project documentation
+- [ ] Create GitHub issues for native UI refactor (use templates)
+- [ ] Set up GitHub Projects board for sprint management
 - [ ] Define architectural decision records (ADRs)
+- [ ] Test Copilot agent workflows
+
+## Ready for Copilot Agent
+- [ ] Fix QR code visibility (short-term WebView fix)
+- [ ] Create native QR code pairing screen
+- [ ] Implement message data models and Room database
+- [ ] Build background message sync service
+- [ ] Create conversation list UI in Compose
 
 ## In Progress
 - [x] Set up Git repository
 - [x] Configure VS Code workspace
-- [x] Install Agile/Kanban extensions
+- [x] Install Agile extensions
+- [x] Create GitHub repository with workflows
+- [x] Set up Copilot agent automation
 
 ## Done
 - [x] Initial project setup with Compose and Car App Library
