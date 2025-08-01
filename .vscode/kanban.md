@@ -30,11 +30,11 @@
 - [ ] Test Copilot agent workflows
 
 ## Ready for Copilot Agent
-- [ ] Fix QR code visibility (short-term WebView fix)
-- [ ] Create native QR code pairing screen
-- [ ] Implement message data models and Room database
-- [ ] Build background message sync service
-- [ ] Create conversation list UI in Compose
+- [ ] #3 Build native QR code pairing screen (HIGH PRIORITY)
+- [ ] #2 Design and implement data models and Room database  
+- [ ] #5 Create conversation list UI in Compose
+- [ ] #6 Implement message detail and reply UI
+- [ ] #4 Implement background message sync service
 
 ## In Progress
 - [x] Set up Git repository

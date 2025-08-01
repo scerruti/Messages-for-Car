@@ -21,14 +21,13 @@ Replace the current WebView-based implementation with a native Jetpack Compose U
 - Native Android integration capabilities
 
 ## Child Issues
-- [ ] #[TBD] Design and implement data models for messages
-- [ ] #[TBD] Create Room database for local message storage
-- [ ] #[TBD] Implement background message synchronization service
-- [ ] #[TBD] Build native QR code pairing screen
-- [ ] #[TBD] Create conversation list UI in Compose
-- [ ] #[TBD] Implement message detail/reply UI
-- [ ] #[TBD] Add voice message recording/playback
-- [ ] #[TBD] Integrate with notification system
+- [ ] #2 Design and implement data models for messages
+- [ ] #4 Implement background message synchronization service
+- [ ] #3 Build native QR code pairing screen
+- [ ] #5 Create conversation list UI in Compose
+- [ ] #6 Implement message detail/reply UI
+- [ ] Future: Add voice message recording/playbook
+- [ ] Future: Integrate with notification system
 
 ## Success Criteria
 - [ ] QR code pairing works reliably
