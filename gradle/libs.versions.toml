@@ -1,7 +1,7 @@
 [versions]
 agp = "8.7.3"
-kotlin = "2.1.0"
-compose-compiler = "1.5.15"
+kotlin = "1.9.24"
+compose-compiler = "1.5.14"
 coreKtx = "1.15.0"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
@@ -10,6 +10,9 @@ appcompat = "1.7.0"
 webkit = "1.12.1"
 media = "1.6.0"
 car = "1.4.0"
+room = "2.6.1"
+workManager = "2.9.1"
+zxing = "3.5.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,7 +31,18 @@ androidx-media = { group = "androidx.media", name = "media", version.ref = "medi
 androidx-car-app = { group = "androidx.car.app", name = "app", version.ref = "car" }
 androidx-car-app-automotive = { group = "androidx.car.app", name = "app-automotive", version.ref = "car" }
 
+# Room dependencies
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+
+# WorkManager for background sync
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
+
+# ZXing for QR codes
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+zxing-android-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version = "4.3.0" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
