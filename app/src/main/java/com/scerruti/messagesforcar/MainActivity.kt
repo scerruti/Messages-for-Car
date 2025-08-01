@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat
 import com.scerruti.messagesforcar.automotive.AutomotiveHelper
 import com.scerruti.messagesforcar.sync.MessageSyncManager
 import com.scerruti.messagesforcar.ui.theme.MessagesForCarTheme
-import com.scerruti.messagesforcar.ui.MessagingWebView
+import com.scerruti.messagesforcar.ui.conversations.ConversationListScreen
 import com.scerruti.messagesforcar.ui.qr.QRCodePairingActivity
 import com.scerruti.messagesforcar.data.preferences.PairingPreferences
 
@@ -120,12 +120,15 @@ class MainActivity : ComponentActivity() {
                         .weight(1f)
                 )
             } else {
-                // Main WebView content - only show when paired
-                MessagingWebView(
+                // Main conversation list - only show when paired
+                ConversationListScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f),
-                    onPairingStateChanged = ::onPairingStateChanged
+                    onConversationClick = { conversation ->
+                        // TODO: Navigate to message detail screen
+                        // For now, just log the click
+                    }
                 )
             }
         }
