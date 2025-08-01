@@ -1,6 +1,7 @@
 package com.scerruti.messagesforcar
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -21,12 +22,15 @@ import com.scerruti.messagesforcar.automotive.AutomotiveHelper
 import com.scerruti.messagesforcar.service.MessagesBackgroundService
 import com.scerruti.messagesforcar.ui.theme.MessagesForCarTheme
 import com.scerruti.messagesforcar.ui.MessagingWebView
+import com.scerruti.messagesforcar.ui.qr.QRCodePairingActivity
+import com.scerruti.messagesforcar.data.preferences.PairingPreferences
 
 class MainActivity : ComponentActivity() {
     
     private var hasNotificationPermission by mutableStateOf(false)
     private var backgroundServiceRunning by mutableStateOf(false)
     private var isPaired by mutableStateOf(false)
+    private lateinit var pairingPreferences: PairingPreferences
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -39,6 +43,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
+        // Initialize pairing preferences
+        pairingPreferences = PairingPreferences.getInstance(this)
+        
         // Log automotive information for debugging
         AutomotiveHelper.logAutomotiveInfo(this)
         
@@ -50,6 +57,15 @@ class MainActivity : ComponentActivity() {
                     MainContent(modifier = Modifier.padding(innerPadding))
                 }
             }
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Check pairing state when activity resumes (e.g., returning from QR pairing)
+        isPaired = pairingPreferences.isPaired
+        if (isPaired && hasNotificationPermission && !backgroundServiceRunning) {
+            startBackgroundService()
         }
     }
     
@@ -90,14 +106,77 @@ class MainActivity : ComponentActivity() {
             // Status bar showing service state
             StatusBar()
             
-            // Main WebView content
-            MessagingWebView(
+            if (!isPaired) {
+                // Show QR pairing prompt instead of WebView when not paired
+                QRPairingPrompt(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                )
+            } else {
+                // Main WebView content - only show when paired
+                MessagingWebView(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    onPairingStateChanged = ::onPairingStateChanged
+                )
+            }
+        }
+    }
+    
+    @Composable
+    private fun QRPairingPrompt(modifier: Modifier = Modifier) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "🔗 Pair Your Phone",
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "To start receiving messages in your car, you need to pair your phone with Google Messages for Web.",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            ElevatedButton(
+                onClick = { openQRCodePairing() },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f),
-                onPairingStateChanged = ::onPairingStateChanged
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(
+                    text = "Show QR Code",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "Scan the QR code with your phone's Google Messages app to pair your devices.",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+    
+    private fun openQRCodePairing() {
+        val intent = Intent(this, QRCodePairingActivity::class.java)
+        startActivity(intent)
     }
     
     @Composable

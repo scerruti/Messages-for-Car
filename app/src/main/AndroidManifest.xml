@@ -63,6 +63,14 @@
             </intent-filter>
         </activity>
 
+        <!-- QR Code Pairing Activity for device pairing -->
+        <activity
+            android:name=".ui.qr.QRCodePairingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MessagesForCar"
+            android:screenOrientation="landscape"
+            android:hardwareAccelerated="true" />
+
         <!-- Automotive App Service for Car UI -->
         <!--
         <service
