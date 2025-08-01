@@ -3,6 +3,7 @@ package com.scerruti.messagesforcar.service
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -11,6 +12,7 @@ import android.webkit.*
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
+import androidx.core.content.ContextCompat
 import com.scerruti.messagesforcar.R
 
 /**
@@ -319,10 +321,22 @@ class MessagesBackgroundService : Service() {
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .build()
         
-        // Post notification
-        notificationManager.notify(messageCounter, notification)
+        // Check notification permission before posting
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) 
+                != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "Notification permission not granted, cannot post message notification")
+                return
+            }
+        }
         
-        Log.d(TAG, "Message notification created for: $sender")
+        // Post notification
+        try {
+            notificationManager.notify(messageCounter, notification)
+            Log.d(TAG, "Message notification created for: $sender")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to post notification due to permission issue", e)
+        }
     }
     
     /**
