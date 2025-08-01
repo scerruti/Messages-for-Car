@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.scerruti.messagesforcar.automotive.AutomotiveHelper
-import com.scerruti.messagesforcar.service.MessagesBackgroundService
+import com.scerruti.messagesforcar.sync.MessageSyncManager
 import com.scerruti.messagesforcar.ui.theme.MessagesForCarTheme
 import com.scerruti.messagesforcar.ui.MessagingWebView
 import com.scerruti.messagesforcar.ui.qr.QRCodePairingActivity
@@ -28,9 +28,10 @@ import com.scerruti.messagesforcar.data.preferences.PairingPreferences
 class MainActivity : ComponentActivity() {
     
     private var hasNotificationPermission by mutableStateOf(false)
-    private var backgroundServiceRunning by mutableStateOf(false)
+    private var syncServiceRunning by mutableStateOf(false)
     private var isPaired by mutableStateOf(false)
     private lateinit var pairingPreferences: PairingPreferences
+    private lateinit var syncManager: MessageSyncManager
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -43,8 +44,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Initialize pairing preferences
+        // Initialize pairing preferences and sync manager
         pairingPreferences = PairingPreferences.getInstance(this)
+        syncManager = MessageSyncManager.getInstance(this)
         
         // Log automotive information for debugging
         AutomotiveHelper.logAutomotiveInfo(this)
@@ -64,8 +66,8 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // Check pairing state when activity resumes (e.g., returning from QR pairing)
         isPaired = pairingPreferences.isPaired
-        if (isPaired && hasNotificationPermission && !backgroundServiceRunning) {
-            startBackgroundService()
+        if (isPaired && hasNotificationPermission && !syncServiceRunning) {
+            startSyncService()
         }
     }
     
@@ -82,19 +84,23 @@ class MainActivity : ComponentActivity() {
         if (!hasNotificationPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
-        // Don't automatically start background service - wait for pairing
+        // Don't automatically start sync service - wait for pairing
     }
     
-    private fun startBackgroundService() {
-        MessagesBackgroundService.startService(this)
-        backgroundServiceRunning = true
+    private fun startSyncService() {
+        syncManager.startSync()
+        syncServiceRunning = true
     }
     
     private fun onPairingStateChanged(paired: Boolean) {
         isPaired = paired
-        if (paired && hasNotificationPermission && !backgroundServiceRunning) {
-            // Automatically start background service when paired
-            startBackgroundService()
+        if (paired && hasNotificationPermission && !syncServiceRunning) {
+            // Automatically start sync service when paired
+            startSyncService()
+        } else if (!paired && syncServiceRunning) {
+            // Stop sync when unpaired
+            syncManager.stopSync()
+            syncServiceRunning = false
         }
     }
     
@@ -189,7 +195,7 @@ class MainActivity : ComponentActivity() {
                 .fillMaxWidth()
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (backgroundServiceRunning) 
+                containerColor = if (syncServiceRunning) 
                     MaterialTheme.colorScheme.primaryContainer 
                 else 
                     MaterialTheme.colorScheme.errorContainer
@@ -222,9 +228,9 @@ class MainActivity : ComponentActivity() {
                     Text(
                         text = when {
                             !isPaired -> "📱 Scan QR Code to Pair"
-                            !backgroundServiceRunning -> "🟡 Paired - Starting Service..."
-                            backgroundServiceRunning -> "🟢 Background Service Active"
-                            else -> "🔴 Service Stopped"
+                            !syncServiceRunning -> "🟡 Paired - Starting Sync..."
+                            syncServiceRunning -> "🟢 Background Sync Active"
+                            else -> "🔴 Sync Stopped"
                         },
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -238,7 +244,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 
-                if (backgroundServiceRunning) {
+                if (syncServiceRunning) {
                     val notificationText = if (isAutomotive) {
                         "Messages will appear as automotive notifications with voice reply"
                     } else {
@@ -261,7 +267,7 @@ class MainActivity : ComponentActivity() {
                     )
                 } else {
                     Text(
-                        text = "Phone paired! Background monitoring will start automatically",
+                        text = "Phone paired! Background sync will start automatically",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 4.dp),
@@ -274,7 +280,8 @@ class MainActivity : ComponentActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
-        // Note: We don't stop the background service here as it should continue running
+        // Note: We don't stop the sync service here as it should continue running
         // even when the main UI is closed (for automotive use cases)
+        // WorkManager handles its own lifecycle
     }
 }

@@ -76,4 +76,7 @@ interface ConversationDao {
     
     @Query("SELECT * FROM conversations WHERE title LIKE '%' || :query || '%' OR participant_names LIKE '%' || :query || '%'")
     suspend fun searchConversations(query: String): List<ConversationEntity>
+    
+    @Query("SELECT * FROM conversations ORDER BY last_message_timestamp DESC")
+    suspend fun getAllConversations(): List<ConversationEntity>
 }

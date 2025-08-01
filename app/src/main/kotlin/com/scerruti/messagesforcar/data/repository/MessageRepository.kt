@@ -1,6 +1,8 @@
 package com.scerruti.messagesforcar.data.repository
 
+import android.content.Context
 import com.scerruti.messagesforcar.data.dao.MessageDao
+import com.scerruti.messagesforcar.data.database.MessagesDatabase
 import com.scerruti.messagesforcar.data.entity.MessageEntity
 import com.scerruti.messagesforcar.data.entity.MessageStatus
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +14,18 @@ import kotlinx.coroutines.flow.Flow
 class MessageRepository(
     private val messageDao: MessageDao
 ) {
+    
+    companion object {
+        @Volatile
+        private var INSTANCE: MessageRepository? = null
+        
+        fun getInstance(context: Context): MessageRepository {
+            return INSTANCE ?: synchronized(this) {
+                val database = MessagesDatabase.getDatabase(context)
+                INSTANCE ?: MessageRepository(database.messageDao()).also { INSTANCE = it }
+            }
+        }
+    }
     
     fun getMessagesForConversation(conversationId: String): Flow<List<MessageEntity>> {
         return messageDao.getMessagesForConversation(conversationId)
@@ -76,6 +90,13 @@ class MessageRepository(
     
     suspend fun getFailedMessages(): List<MessageEntity> {
         return messageDao.getFailedMessages()
+    }
+    
+    /**
+     * Get all messages synchronously (for WorkManager use)
+     */
+    suspend fun getAllMessagesSync(): List<MessageEntity> {
+        return messageDao.getAllMessages()
     }
     
     /**

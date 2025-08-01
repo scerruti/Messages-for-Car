@@ -65,4 +65,7 @@ interface MessageDao {
     
     @Query("SELECT * FROM messages WHERE status = 'FAILED' ORDER BY timestamp DESC")
     suspend fun getFailedMessages(): List<MessageEntity>
+    
+    @Query("SELECT * FROM messages ORDER BY timestamp DESC")
+    suspend fun getAllMessages(): List<MessageEntity>
 }
