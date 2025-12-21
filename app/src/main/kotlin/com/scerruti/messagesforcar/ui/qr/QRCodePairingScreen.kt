@@ -309,10 +309,10 @@ private suspend fun generateQRCode(
         }
         
         // Fill background with white
-        canvas.drawColor(androidx.compose.ui.graphics.Color.White.toArgb())
+        canvas.drawColor(AndroidColor.WHITE)
         
         // Draw QR code pixels
-        paint.color = androidx.compose.ui.graphics.Color.Black.toArgb()
+        paint.color = AndroidColor.BLACK
         for (x in 0 until width) {
             for (y in 0 until height) {
                 if (bitMatrix[x, y]) {

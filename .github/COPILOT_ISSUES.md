@@ -181,3 +181,34 @@ Build a native conversation list screen using Jetpack Compose that displays conv
 
 @github-copilot this feature has been successfully implemented
 ```
+
+**Issue 5: Message Detail/Reply UI**
+```
+Title: [FEATURE] Implement message detail/reply UI in Jetpack Compose
+Labels: enhancement, copilot-agent, ui, automotive
+
+## Feature Description
+Build a native message detail screen using Jetpack Compose that displays individual messages in a conversation with the ability to compose and send replies.
+
+## Technical Requirements
+- Jetpack Compose implementation
+- LazyColumn for message list performance
+- Material 3 design with automotive customizations
+- Large touch targets for automotive safety
+- Voice input support for replies
+- Message status indicators (sent, delivered, read)
+- Support for different message types (text, image, voice)
+
+## Acceptance Criteria
+- [ ] Compose message detail screen
+- [ ] Message bubble UI with sender identification
+- [ ] Reply input field with send button
+- [ ] Voice input integration
+- [ ] Message status indicators
+- [ ] Automotive-compliant touch targets
+- [ ] Timestamp display and formatting
+- [ ] Proper keyboard handling
+- [ ] Navigation from conversation list
+
+@github-copilot please implement this feature
+```
