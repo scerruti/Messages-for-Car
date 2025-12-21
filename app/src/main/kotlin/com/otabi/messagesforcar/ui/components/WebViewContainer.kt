@@ -5,6 +5,7 @@ import android.webkit.WebViewClient
 import android.webkit.WebSettings
 import android.webkit.JavascriptInterface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
@@ -25,12 +26,34 @@ class PairingStateInterface(private val onPairingStateChanged: ((Boolean) -> Uni
 @Composable
 fun WebViewContainer(
     modifier: Modifier = Modifier,
-    onPairingStateChanged: ((Boolean) -> Unit)? = null
+    onPairingStateChanged: ((Boolean) -> Unit)? = null,
+    injectText: String? = null
 ) {
+    val webView = remember { mutableStateOf<android.webkit.WebView?>(null) }
+
+    // Inject text when requested
+    LaunchedEffect(injectText) {
+        injectText?.let { text ->
+            webView.value?.evaluateJavascript("""
+                (function() {
+                    const input = document.querySelector('textarea[data-testid="message-input"], input[type="text"]');
+                    if (input) {
+                        input.value = '$text';
+                        input.focus();
+                        // Trigger input event
+                        const event = new Event('input', { bubbles: true });
+                        input.dispatchEvent(event);
+                    }
+                })();
+            """.trimIndent(), null)
+        }
+    }
+
     AndroidView(
         modifier = modifier,
         factory = { context ->
             WebView(context).apply {
+                webView.value = this // Store reference
                 // Add JavaScript interface for pairing detection
                 addJavascriptInterface(PairingStateInterface(onPairingStateChanged), "AndroidPairing")
 

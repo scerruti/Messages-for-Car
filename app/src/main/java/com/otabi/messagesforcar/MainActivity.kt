@@ -17,6 +17,7 @@ import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
 import com.otabi.messagesforcar.ui.screens.MainScreen
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
 import com.otabi.messagesforcar.ui.qr.QRCodePairingActivity
+import com.otabi.messagesforcar.service.MessagesBackgroundService
 
 class MainActivity : ComponentActivity() {
 
@@ -47,12 +48,16 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // Check pairing state when activity resumes (e.g., returning from QR pairing)
         isPaired = pairingPreferences.isPaired
+        if (isPaired) {
+            MessagesBackgroundService.startService(this)
+        }
     }
 
     private fun onPairingStateChanged(paired: Boolean) {
         isPaired = paired
         if (paired) {
             pairingPreferences.markAsPaired("https://messages.google.com/web")
+            MessagesBackgroundService.startService(this)
         }
     }
 

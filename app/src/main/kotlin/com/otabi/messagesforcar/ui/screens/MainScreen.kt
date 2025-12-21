@@ -1,14 +1,17 @@
 package com.otabi.messagesforcar.ui.screens
 
+import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
 import com.otabi.messagesforcar.ui.components.WebViewContainer
+import com.otabi.messagesforcar.ui.components.VoiceInputButton
+import com.otabi.messagesforcar.voice.VoiceManager
 
 /**
  * Main screen with WebView and driving-safe overlays.
@@ -25,11 +28,34 @@ fun MainScreen(
     // TODO: Add driving state detection when available
     val isDriving = remember { false } // Placeholder for driving state
 
+    var injectText by remember { mutableStateOf<String?>(null) }
+    var isListening by remember { mutableStateOf(false) }
+    val voiceManager = remember {
+        VoiceManager(
+            context = context,
+            onResult = { result ->
+                injectText = result
+                isListening = false
+            },
+            onError = { error ->
+                // TODO: Show error snackbar
+                isListening = false
+            }
+        )
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            voiceManager.destroy()
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         // WebView as the main content
         WebViewContainer(
             modifier = Modifier.fillMaxSize(),
-            onPairingStateChanged = onPairingStateChanged
+            onPairingStateChanged = onPairingStateChanged,
+            injectText = injectText
         )
 
         // Status bar overlay
@@ -65,17 +91,23 @@ fun MainScreen(
             }
         }
 
-        // Voice input overlay (placeholder for Step 5)
+        // Voice input overlay
         if (!isDriving) { // Only show when not driving for safety
-            FloatingActionButton(
-                onClick = { /* TODO: Implement voice input */ },
+            VoiceInputButton(
+                isListening = isListening,
+                onClick = {
+                    if (isListening) {
+                        voiceManager.stopListening()
+                        isListening = false
+                    } else {
+                        voiceManager.startListening()
+                        isListening = true
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(24.dp),
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Text("🎤", style = MaterialTheme.typography.headlineSmall)
-            }
+                    .padding(24.dp)
+            )
         }
     }
 }
