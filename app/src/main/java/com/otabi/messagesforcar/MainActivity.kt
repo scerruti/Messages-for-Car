@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
 import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
+import com.otabi.messagesforcar.ui.components.WebViewContainer
 
 class MainActivity : ComponentActivity() {
 
@@ -31,11 +32,7 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "WebView Placeholder",
-                            style = MaterialTheme.typography.headlineMedium,
-                            textAlign = TextAlign.Center
-                        )
+                        WebViewContainer(modifier = Modifier.fillMaxSize())
                     }
                 }
             }
