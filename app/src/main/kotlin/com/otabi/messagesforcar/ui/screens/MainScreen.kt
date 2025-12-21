@@ -17,6 +17,7 @@ import com.otabi.messagesforcar.automotive.AutomotiveHelper
 import com.otabi.messagesforcar.ui.components.WebViewContainer
 import com.otabi.messagesforcar.ui.components.VoiceInputButton
 import com.otabi.messagesforcar.voice.VoiceManager
+import kotlinx.coroutines.delay
 
 /**
  * Main screen with WebView and driving-safe overlays.
@@ -35,12 +36,17 @@ fun MainScreen(
     var isListening by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var autoSend by remember { mutableStateOf(false) }
+    var pendingSendText by remember { mutableStateOf<String?>(null) }
+    var countdown by remember { mutableStateOf(0) }
+    var isCountdownActive by remember { mutableStateOf(false) }
 
     val voiceManager = remember(context) {
         VoiceManager(
             context = context,
             onResult = { result ->
-                injectText = result
+                pendingSendText = result
+                countdown = 3
+                isCountdownActive = true
                 isListening = false
             },
             onError = {
@@ -53,6 +59,20 @@ fun MainScreen(
     DisposableEffect(Unit) {
         onDispose {
             voiceManager.destroy()
+        }
+    }
+
+    LaunchedEffect(isCountdownActive) {
+        if (isCountdownActive) {
+            while (countdown > 0) {
+                delay(1000)
+                countdown -= 1
+            }
+            if (countdown == 0 && pendingSendText != null) {
+                injectText = pendingSendText
+                pendingSendText = null
+                isCountdownActive = false
+            }
         }
     }
 
@@ -146,5 +166,40 @@ fun MainScreen(
                 .align(Alignment.BottomEnd)
                 .padding(24.dp)
         )
+
+        // Countdown overlay
+        if (isCountdownActive) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 32.dp)
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Sending in $countdown…",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        TextButton(
+                            onClick = {
+                                pendingSendText = null
+                                isCountdownActive = false
+                            }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
