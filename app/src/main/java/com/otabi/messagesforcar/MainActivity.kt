@@ -14,7 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
 import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
-import com.otabi.messagesforcar.ui.components.WebViewContainer
+import com.otabi.messagesforcar.ui.screens.MainScreen
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
 import com.otabi.messagesforcar.ui.qr.QRCodePairingActivity
 
@@ -70,8 +70,8 @@ class MainActivity : ComponentActivity() {
                 // Show QR pairing prompt
                 QRPairingPrompt(modifier = Modifier.fillMaxSize())
             } else {
-                // Show WebView with pairing detection
-                WebViewContainer(
+                // Show main screen with WebView and overlays
+                MainScreen(
                     modifier = Modifier.fillMaxSize(),
                     onPairingStateChanged = { paired -> onPairingStateChanged(paired) }
                 )
