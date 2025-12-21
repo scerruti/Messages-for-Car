@@ -3,6 +3,8 @@ package com.otabi.messagesforcar.ui.screens
 import androidx.compose.runtime.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Alignment
@@ -31,6 +33,8 @@ fun MainScreen(
 
     var injectText by remember { mutableStateOf<String?>(null) }
     var isListening by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
+    var autoSend by remember { mutableStateOf(false) }
 
     val voiceManager = remember(context) {
         VoiceManager(
@@ -58,7 +62,8 @@ fun MainScreen(
             modifier = Modifier.fillMaxSize(),
             onPairingStateChanged = onPairingStateChanged,
             injectText = injectText,
-            onTextInjected = { injectText = null }
+            onTextInjected = { injectText = null },
+            autoSend = autoSend
         )
 
         // Status bar overlay
@@ -92,6 +97,37 @@ fun MainScreen(
                     )
                 }
             }
+        }
+
+        // Settings icon
+        IconButton(
+            onClick = { showSettings = !showSettings },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+
+        // Settings dropdown menu
+        DropdownMenu(
+            expanded = showSettings,
+            onDismissRequest = { showSettings = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Auto-send voice messages") },
+                trailingIcon = {
+                    Switch(
+                        checked = autoSend,
+                        onCheckedChange = { autoSend = it }
+                    )
+                },
+                onClick = { }
+            )
         }
 
         // Voice input overlay

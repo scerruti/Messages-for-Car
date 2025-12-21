@@ -31,6 +31,13 @@ fun WebView.injectMessageText(text: String) {
     )
 }
 
+fun WebView.sendMessage() {
+    evaluateJavascript(
+        "document.querySelector('[aria-label=\"Send\"]').click();",
+        null
+    )
+}
+
 /**
  * JavaScript interface for detecting pairing state changes.
  */
@@ -50,7 +57,8 @@ fun WebViewContainer(
     modifier: Modifier = Modifier,
     onPairingStateChanged: ((Boolean) -> Unit)? = null,
     injectText: String? = null,
-    onTextInjected: (() -> Unit)? = null
+    onTextInjected: (() -> Unit)? = null,
+    autoSend: Boolean = false
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
 
@@ -60,6 +68,9 @@ fun WebViewContainer(
         webView?.apply {
             focusInputField()
             injectMessageText(text)
+            if (autoSend) {
+                sendMessage()
+            }
         }
         onTextInjected?.invoke()
     }
