@@ -4,6 +4,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebSettings
 import android.webkit.JavascriptInterface
+import android.view.MotionEvent
+import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -27,7 +29,8 @@ class PairingStateInterface(private val onPairingStateChanged: ((Boolean) -> Uni
 fun WebViewContainer(
     modifier: Modifier = Modifier,
     onPairingStateChanged: ((Boolean) -> Unit)? = null,
-    injectText: String? = null
+    injectText: String? = null,
+    isDriving: Boolean = false
 ) {
     val webView = remember { mutableStateOf<android.webkit.WebView?>(null) }
 
@@ -68,6 +71,17 @@ fun WebViewContainer(
                     setRenderPriority(WebSettings.RenderPriority.HIGH)
                     cacheMode = WebSettings.LOAD_DEFAULT
                     mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                }
+
+                // Block touch events when driving for safety
+                setOnTouchListener { _, event ->
+                    if (isDriving) {
+                        // Consume touch events when driving
+                        true
+                    } else {
+                        // Allow normal touch handling
+                        false
+                    }
                 }
 
                 // Restrict navigation to Google Messages domain for security

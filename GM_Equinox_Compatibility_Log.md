@@ -38,5 +38,33 @@ This log tracks decisions, assumptions, and workarounds specific to the GM Equin
 **Driving State:** UI restrictions enforced via AutomotiveHelper; validate Equinox driving detection APIs.  
 **Performance:** WebView memory usage and rendering performance not yet tested on Equinox hardware.  
 
-**Next Steps:** Deploy to Equinox for real-world testing; monitor WebView stability, audio conflicts, and driving state accuracy; update log with findings.</content>
+**Next Steps:** Deploy to Equinox for real-world testing; monitor WebView stability, audio conflicts, and driving state accuracy; update log with findings.
+
+## Step 6: Driving-Safe Mode and Automotive Restrictions
+
+### Implementation Details
+**DrivingStateManager.kt:** Created using CarUxRestrictionsManager to detect driving state via distraction optimization requirements. Exposes isDriving as StateFlow<Boolean> with proper listener registration/cleanup.
+
+**MainScreen.kt Updates:**
+- Integrated DrivingStateManager with real-time driving state collection
+- Voice button hidden and text injection blocked when driving
+- Added semi-transparent driving mode overlay with safety message
+- Passed isDriving to WebViewContainer for touch blocking
+
+**WebViewContainer.kt Updates:**
+- Added isDriving parameter
+- Touch events consumed when driving (WebView visible but non-interactive)
+
+**MainActivity.kt Updates:**
+- DrivingStateManager lifecycle management
+- Pairing blocked when driving with user notification via Toast
+
+### GM Equinox Specific Considerations
+**CarUxRestrictionsManager Compatibility:** Assumes GM AAOS implements standard CarUxRestrictionsManager for driving detection. May need fallback to vehicle speed sensors if UX restrictions not properly exposed.
+
+**UI Restrictions:** Driving overlay prioritizes safety over messaging access. Touch blocking prevents accidental interactions while maintaining message visibility for awareness.
+
+**Pairing Safety:** QR pairing disabled during motion to prevent distracted setup. User receives clear feedback about safety restrictions.
+
+**Testing Requirements:** Validate driving state detection accuracy on Equinox hardware; ensure overlay appears/disappears correctly at motion start/stop; confirm touch blocking effectiveness.</content>
 <parameter name="filePath">/Users/scerruti/Messages for Car/GM_Equinox_Compatibility_Log.md

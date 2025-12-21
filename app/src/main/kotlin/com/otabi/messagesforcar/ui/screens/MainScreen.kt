@@ -1,14 +1,18 @@
 package com.otabi.messagesforcar.ui.screens
 
 import androidx.compose.runtime.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
+import com.otabi.messagesforcar.automotive.DrivingStateManager
 import com.otabi.messagesforcar.ui.components.WebViewContainer
 import com.otabi.messagesforcar.ui.components.VoiceInputButton
 import com.otabi.messagesforcar.voice.VoiceManager
@@ -25,8 +29,9 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val isAutomotive = remember { AutomotiveHelper.isAutomotiveOS(context) }
-    // TODO: Add driving state detection when available
-    val isDriving = remember { false } // Placeholder for driving state
+
+    val drivingStateManager = remember { DrivingStateManager(context) }
+    val isDriving by drivingStateManager.isDriving.collectAsState()
 
     var injectText by remember { mutableStateOf<String?>(null) }
     var isListening by remember { mutableStateOf(false) }
@@ -34,7 +39,9 @@ fun MainScreen(
         VoiceManager(
             context = context,
             onResult = { result ->
-                injectText = result
+                if (!isDriving) {
+                    injectText = result
+                }
                 isListening = false
             },
             onError = { error ->
@@ -47,6 +54,7 @@ fun MainScreen(
     DisposableEffect(Unit) {
         onDispose {
             voiceManager.destroy()
+            drivingStateManager.destroy()
         }
     }
 
@@ -55,7 +63,8 @@ fun MainScreen(
         WebViewContainer(
             modifier = Modifier.fillMaxSize(),
             onPairingStateChanged = onPairingStateChanged,
-            injectText = injectText
+            injectText = injectText,
+            isDriving = isDriving
         )
 
         // Status bar overlay
@@ -108,6 +117,41 @@ fun MainScreen(
                     .align(Alignment.BottomEnd)
                     .padding(24.dp)
             )
+        }
+
+        // Driving mode overlay
+        if (isDriving) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.padding(32.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "🚗 Driving Mode Active",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            text = "Voice input and messaging are disabled while driving for safety. Please pull over to send messages.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }
