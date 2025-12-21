@@ -14,8 +14,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
+import com.otabi.messagesforcar.pairing.PairingState
 import com.otabi.messagesforcar.ui.components.WebViewContainer
-import com.otabi.messagesforcar.ui.components.VoiceInputButton
 import com.otabi.messagesforcar.voice.VoiceManager
 import kotlinx.coroutines.delay
 
@@ -27,11 +27,12 @@ import kotlinx.coroutines.delay
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    onPairingStateChanged: ((Boolean) -> Unit)? = null
+    onPairingStateChanged: ((PairingState) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val isAutomotive = remember { AutomotiveHelper.isAutomotiveOS(context) }
 
+    var pairingState by remember { mutableStateOf(PairingState.UNKNOWN) }
     var injectText by remember { mutableStateOf<String?>(null) }
     var isListening by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
@@ -77,10 +78,47 @@ fun MainScreen(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
+        // Onboarding UI
+        if (pairingState == PairingState.QR_REQUIRED) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Text(
+                    text = "Scan the QR code with your phone to pair.",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else if (pairingState == PairingState.IMAGE_MATCH_REQUIRED) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Text(
+                    text = "Match the icon shown here with the one on your phone to pair.",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
         // WebView as the main content
         WebViewContainer(
             modifier = Modifier.fillMaxSize(),
-            onPairingStateChanged = onPairingStateChanged,
+            onPairingStateChanged = { pairingState = it },
             injectText = injectText,
             onTextInjected = { injectText = null },
             autoSend = autoSend

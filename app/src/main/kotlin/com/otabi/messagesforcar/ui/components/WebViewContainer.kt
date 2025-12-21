@@ -1,17 +1,5 @@
-package com.otabi.messagesforcar.ui.components
-
-import android.webkit.JavascriptInterface
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
+import com.otabi.messagesforcar.pairing.PairingState
+import com.otabi.messagesforcar.ui.components.PairingStateInterface
 
 /**
  * Helper functions for WebView text injection.
@@ -39,23 +27,13 @@ fun WebView.sendMessage() {
 }
 
 /**
- * JavaScript interface for detecting pairing state changes.
- */
-class PairingStateInterface(private val onPairingStateChanged: ((Boolean) -> Unit)?) {
-    @JavascriptInterface
-    fun onPairingDetected(isPaired: Boolean) {
-        onPairingStateChanged?.invoke(isPaired)
-    }
-}
-
-/**
  * Basic WebView container for Messages for Web with pairing detection.
  * Embeds WebView in Compose with automotive-safe configuration and pairing state monitoring.
  */
 @Composable
 fun WebViewContainer(
     modifier: Modifier = Modifier,
-    onPairingStateChanged: ((Boolean) -> Unit)? = null,
+    onPairingStateChanged: ((PairingState) -> Unit)? = null,
     injectText: String? = null,
     onTextInjected: (() -> Unit)? = null,
     autoSend: Boolean = false
@@ -123,19 +101,31 @@ fun WebViewContainer(
                                 console.log('Injecting pairing detection');
                                 
                                 function checkPairingState() {
-                                    const isPaired =
-                                        document.querySelector('[data-testid="conversation-list"]') !== null ||
-                                        document.querySelector('.conversation-list') !== null ||
-                                        document.querySelector('[role="main"]') !== null;
+                                    let state = 'UNKNOWN';
                                     
-                                    if (isPaired) {
-                                        console.log('Pairing detected');
-                                        AndroidPairing.onPairingDetected(true);
+                                    // A. Real QR code present
+                                    if (document.querySelector('canvas, img[src*="qr"]')) {
+                                        state = 'QR_REQUIRED';
                                     }
+                                    // B. URL-QR fallback
+                                    else if (document.body.innerText.includes('messages.google.com/web/authentication')) {
+                                        state = 'IMAGE_MATCH_REQUIRED';
+                                    }
+                                    // C. Image-match challenge
+                                    else if (document.querySelector('[role="button"][data-mdc-dialog-action]') ||
+                                             document.querySelector('img[src*="challenge"], div[data-challenge]')) {
+                                        state = 'IMAGE_MATCH_REQUIRED';
+                                    }
+                                    // D. Full Messages UI loaded
+                                    else if (document.querySelector('mws-conversation-list, div[aria-label="Conversations"]')) {
+                                        state = 'PAIRED';
+                                    }
+                                    
+                                    AndroidPairing.onPairingStateChanged(state);
                                 }
                                 
                                 checkPairingState();
-                                setInterval(checkPairingState, 2000);
+                                setInterval(checkPairingState, 1000);
                             })();
                             """.trimIndent(),
                             null

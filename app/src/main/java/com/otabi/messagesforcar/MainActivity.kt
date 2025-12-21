@@ -17,13 +17,14 @@ import com.otabi.messagesforcar.automotive.AutomotiveHelper
 import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
 import com.otabi.messagesforcar.ui.screens.MainScreen
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
+import com.otabi.messagesforcar.pairing.PairingState
 import com.otabi.messagesforcar.ui.qr.QRCodePairingActivity
 import com.otabi.messagesforcar.service.MessagesBackgroundService
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var pairingPreferences: PairingPreferences
-    private var isPaired by mutableStateOf(false)
+    private var pairingState by mutableStateOf(PairingState.UNKNOWN)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
         // Initialize managers
         pairingPreferences = PairingPreferences.getInstance(this)
-        isPaired = pairingPreferences.isPaired
+        pairingState = if (pairingPreferences.isPaired) PairingState.PAIRED else PairingState.UNKNOWN
 
         setContent {
             MessagesForCarTheme {
@@ -45,15 +46,15 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         // Check pairing state when activity resumes (e.g., returning from QR pairing)
-        isPaired = pairingPreferences.isPaired
-        if (isPaired) {
+        pairingState = if (pairingPreferences.isPaired) PairingState.PAIRED else PairingState.UNKNOWN
+        if (pairingState == PairingState.PAIRED) {
             MessagesBackgroundService.startService(this)
         }
     }
 
-    private fun onPairingStateChanged(paired: Boolean) {
-        isPaired = paired
-        if (paired) {
+    private fun onPairingStateChanged(state: PairingState) {
+        pairingState = state
+        if (state == PairingState.PAIRED) {
             pairingPreferences.markAsPaired("https://messages.google.com/web")
             MessagesBackgroundService.startService(this)
         }
@@ -69,14 +70,14 @@ class MainActivity : ComponentActivity() {
         Column(
             modifier = modifier.fillMaxSize()
         ) {
-            if (!isPaired) {
+            if (pairingState != PairingState.PAIRED) {
                 // Show QR pairing prompt
                 QRPairingPrompt(modifier = Modifier.fillMaxSize())
             } else {
                 // Show main screen with WebView and overlays
                 MainScreen(
                     modifier = Modifier.fillMaxSize(),
-                    onPairingStateChanged = { paired -> onPairingStateChanged(paired) }
+                    onPairingStateChanged = { state -> onPairingStateChanged(state) }
                 )
             }
         }
