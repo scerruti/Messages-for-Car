@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scerruti.messagesforcar"
+    namespace = "com.otabi.messagesforcar"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.scerruti.messagesforcar"
+        applicationId = "com.otabi.messagesforcar"
         minSdk = 29
         targetSdk = 35
         versionCode = 1
