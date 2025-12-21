@@ -73,21 +73,21 @@ class MessageDetailViewModel(application: Application) : AndroidViewModel(applic
                 val currentTime = System.currentTimeMillis()
                 
                 // Create new message
-            val newMessage = MessageEntity(
-                id = messageId,
-                conversationId = conversationId,
-                content = content,
-                timestamp = currentTime,
-                senderId = "me", // TODO: Get actual user ID
-                senderName = "Me",
-                messageType = MessageType.TEXT,
-                status = MessageStatus.PENDING,
-                mediaUri = null,
-                mediaType = null,
-                isFromMe = true,
-                readTimestamp = null,
-                deliveredTimestamp = null
-            )
+                val newMessage = MessageEntity(
+                    id = messageId,
+                    conversationId = conversationId,
+                    content = content,
+                    timestamp = currentTime,
+                    senderId = "me", // TODO: Get actual user ID
+                    senderName = "Me",
+                    messageType = MessageType.TEXT,
+                    status = MessageStatus.PENDING,
+                    mediaUri = null,
+                    mediaType = null,
+                    isFromMe = true,
+                    readTimestamp = null,
+                    deliveredTimestamp = null
+                )
                 
                 // Insert the message locally
                 messageRepository.insertMessage(newMessage)

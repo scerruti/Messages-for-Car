@@ -1,18 +1,38 @@
 package com.otabi.messagesforcar.ui.components
 
+import android.webkit.JavascriptInterface
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.WebSettings
-import android.webkit.JavascriptInterface
-import android.view.MotionEvent
-import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
 /**
- * JavaScript interface for detecting pairing state changes
+ * Helper functions for WebView text injection.
+ */
+fun WebView.focusInputField() {
+    evaluateJavascript(
+        "document.querySelector('textarea, input[type=text]').focus();",
+        null
+    )
+}
+
+fun WebView.injectMessageText(text: String) {
+    val escaped = text.replace("'", "\\'")
+    evaluateJavascript(
+        "document.querySelector('textarea, input[type=text]').value = '$escaped';",
+        null
+    )
+}
+
+/**
+ * JavaScript interface for detecting pairing state changes.
  */
 class PairingStateInterface(private val onPairingStateChanged: ((Boolean) -> Unit)?) {
     @JavascriptInterface
@@ -30,35 +50,31 @@ fun WebViewContainer(
     modifier: Modifier = Modifier,
     onPairingStateChanged: ((Boolean) -> Unit)? = null,
     injectText: String? = null,
-    isDriving: Boolean = false
+    onTextInjected: (() -> Unit)? = null
 ) {
-    val webView = remember { mutableStateOf<android.webkit.WebView?>(null) }
+    var webView by remember { mutableStateOf<WebView?>(null) }
 
     // Inject text when requested
     LaunchedEffect(injectText) {
-        injectText?.let { text ->
-            webView.value?.evaluateJavascript("""
-                (function() {
-                    const input = document.querySelector('textarea[data-testid="message-input"], input[type="text"]');
-                    if (input) {
-                        input.value = '$text';
-                        input.focus();
-                        // Trigger input event
-                        const event = new Event('input', { bubbles: true });
-                        input.dispatchEvent(event);
-                    }
-                })();
-            """.trimIndent(), null)
+        val text = injectText ?: return@LaunchedEffect
+        webView?.apply {
+            focusInputField()
+            injectMessageText(text)
         }
+        onTextInjected?.invoke()
     }
 
     AndroidView(
         modifier = modifier,
         factory = { context ->
             WebView(context).apply {
-                webView.value = this // Store reference
+                webView = this
+
                 // Add JavaScript interface for pairing detection
-                addJavascriptInterface(PairingStateInterface(onPairingStateChanged), "AndroidPairing")
+                addJavascriptInterface(
+                    PairingStateInterface(onPairingStateChanged),
+                    "AndroidPairing"
+                )
 
                 // Automotive-optimized WebView settings
                 settings.apply {
@@ -68,27 +84,18 @@ fun WebViewContainer(
                     setSupportZoom(false)
                     builtInZoomControls = false
                     displayZoomControls = false
+                    @Suppress("DEPRECATION")
                     setRenderPriority(WebSettings.RenderPriority.HIGH)
                     cacheMode = WebSettings.LOAD_DEFAULT
                     mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                }
-
-                // Block touch events when driving for safety
-                setOnTouchListener { _, event ->
-                    if (isDriving) {
-                        // Consume touch events when driving
-                        true
-                    } else {
-                        // Allow normal touch handling
-                        false
-                    }
                 }
 
                 // Restrict navigation to Google Messages domain for security
                 webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                         return if (url?.contains("messages.google.com") == true ||
-                                   url?.contains("accounts.google.com") == true) {
+                            url?.contains("accounts.google.com") == true
+                        ) {
                             false // Allow
                         } else {
                             true // Block external navigation
@@ -99,16 +106,16 @@ fun WebViewContainer(
                         super.onPageFinished(view, url)
 
                         // Inject pairing detection script
-                        view?.evaluateJavascript("""
+                        view?.evaluateJavascript(
+                            """
                             (function() {
                                 console.log('Injecting pairing detection');
                                 
-                                // Function to check pairing state
                                 function checkPairingState() {
-                                    // Check for pairing indicators in the DOM
-                                    const isPaired = document.querySelector('[data-testid="conversation-list"]') !== null ||
-                                                   document.querySelector('.conversation-list') !== null ||
-                                                   document.querySelector('[role="main"]') !== null;
+                                    const isPaired =
+                                        document.querySelector('[data-testid="conversation-list"]') !== null ||
+                                        document.querySelector('.conversation-list') !== null ||
+                                        document.querySelector('[role="main"]') !== null;
                                     
                                     if (isPaired) {
                                         console.log('Pairing detected');
@@ -116,17 +123,20 @@ fun WebViewContainer(
                                     }
                                 }
                                 
-                                // Check immediately and periodically
                                 checkPairingState();
                                 setInterval(checkPairingState, 2000);
                             })();
-                        """.trimIndent(), null)
+                            """.trimIndent(),
+                            null
+                        )
                     }
                 }
 
                 // Load Messages for Web
                 loadUrl("https://messages.google.com/web")
             }
-        }
-    )
+        },
+        update = { view ->
+            webView = view
+        })
 }

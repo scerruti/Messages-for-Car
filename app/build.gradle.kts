@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "com.otabi.messagesforcar"
         minSdk = 29
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -62,35 +62,31 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.media)
-    
-    // Car App Library dependencies
-    implementation(libs.androidx.car.app)
-    implementation(libs.androidx.car.app.automotive)
-    
-    // Room dependencies
+
+    // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
-    
-    // Lifecycle and ViewModel
+
+    // Lifecycle & ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.runtime.livedata)
-    
-    // WorkManager for background sync
+
+    // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
-    
-    // ZXing for QR codes
+
+    // ZXing
     implementation(libs.zxing.core)
     implementation(libs.zxing.android.embedded)
-    
+
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    
-    // Testing dependencies
+
+    // Testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:4.11.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-    
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.room:room-testing:2.6.1")

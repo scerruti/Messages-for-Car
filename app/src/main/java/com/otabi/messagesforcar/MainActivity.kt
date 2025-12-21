@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
-import com.otabi.messagesforcar.automotive.DrivingStateManager
 import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
 import com.otabi.messagesforcar.ui.screens.MainScreen
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
@@ -24,7 +23,6 @@ import com.otabi.messagesforcar.service.MessagesBackgroundService
 class MainActivity : ComponentActivity() {
 
     private lateinit var pairingPreferences: PairingPreferences
-    private lateinit var drivingStateManager: DrivingStateManager
     private var isPaired by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,11 +31,7 @@ class MainActivity : ComponentActivity() {
 
         // Initialize managers
         pairingPreferences = PairingPreferences.getInstance(this)
-        drivingStateManager = DrivingStateManager(this)
         isPaired = pairingPreferences.isPaired
-
-        // Log automotive information for debugging
-        AutomotiveHelper.logAutomotiveInfo(this)
 
         setContent {
             MessagesForCarTheme {
@@ -66,10 +60,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openQRCodePairing() {
-        if (drivingStateManager.isDriving.value) {
-            Toast.makeText(this, "Cannot pair while driving. Please pull over for safety.", Toast.LENGTH_LONG).show()
-            return
-        }
         val intent = Intent(this, QRCodePairingActivity::class.java)
         startActivity(intent)
     }
@@ -143,6 +133,5 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        drivingStateManager.destroy()
     }
 }

@@ -12,7 +12,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
-import com.otabi.messagesforcar.automotive.DrivingStateManager
 import com.otabi.messagesforcar.ui.components.WebViewContainer
 import com.otabi.messagesforcar.ui.components.VoiceInputButton
 import com.otabi.messagesforcar.voice.VoiceManager
@@ -30,31 +29,26 @@ fun MainScreen(
     val context = LocalContext.current
     val isAutomotive = remember { AutomotiveHelper.isAutomotiveOS(context) }
 
-    val drivingStateManager = remember { DrivingStateManager(context) }
-    val isDriving by drivingStateManager.isDriving.collectAsState()
-
     var injectText by remember { mutableStateOf<String?>(null) }
     var isListening by remember { mutableStateOf(false) }
-    val voiceManager = remember {
+
+    val voiceManager = remember(context) {
         VoiceManager(
             context = context,
             onResult = { result ->
-                if (!isDriving) {
-                    injectText = result
-                }
+                injectText = result
                 isListening = false
             },
-            onError = { error ->
-                // TODO: Show error snackbar
+            onError = {
                 isListening = false
             }
         )
     }
 
+
     DisposableEffect(Unit) {
         onDispose {
             voiceManager.destroy()
-            drivingStateManager.destroy()
         }
     }
 
@@ -64,7 +58,7 @@ fun MainScreen(
             modifier = Modifier.fillMaxSize(),
             onPairingStateChanged = onPairingStateChanged,
             injectText = injectText,
-            isDriving = isDriving
+            onTextInjected = { injectText = null }
         )
 
         // Status bar overlay
@@ -92,7 +86,7 @@ fun MainScreen(
                     )
 
                     Text(
-                        text = if (isDriving) "🚗 Driving Mode" else "🅿️ Parked",
+                        text = "Messages for Car",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -101,57 +95,20 @@ fun MainScreen(
         }
 
         // Voice input overlay
-        if (!isDriving) { // Only show when not driving for safety
-            VoiceInputButton(
-                isListening = isListening,
-                onClick = {
-                    if (isListening) {
-                        voiceManager.stopListening()
-                        isListening = false
-                    } else {
-                        voiceManager.startListening()
-                        isListening = true
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(24.dp)
-            )
-        }
-
-        // Driving mode overlay
-        if (isDriving) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    modifier = Modifier.padding(32.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = "🚗 Driving Mode Active",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Text(
-                            text = "Voice input and messaging are disabled while driving for safety. Please pull over to send messages.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+        VoiceInputButton(
+            isListening = isListening,
+            onClick = {
+                if (isListening) {
+                    voiceManager.stopListening()
+                    isListening = false
+                } else {
+                    voiceManager.startListening()
+                    isListening = true
                 }
-            }
-        }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+        )
     }
 }
