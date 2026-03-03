@@ -18,7 +18,7 @@ import android.webkit.*
 import androidx.compose.ui.viewinterop.AndroidView
 
 // User agent for Google Messages Web
-private const val WEBVIEW_USER_AGENT_DESKTOP = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+private const val WEBVIEW_USER_AGENT_DESKTOP = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
 
 /**
  * Account-based pairing screen using Google Messages for Web sign-in.

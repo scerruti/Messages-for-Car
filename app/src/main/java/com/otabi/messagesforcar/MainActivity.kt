@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun openQRCodePairing() {
+    private fun openSignInPairing() {
         val intent = Intent(this, SignInPairingActivity::class.java)
         startActivity(intent)
     }
@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "To start receiving messages in your car, you need to pair your phone with Google Messages for Web.",
+                text = "To start receiving messages in your car, sign in with your Google account to pair this device with your phone.",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -110,13 +110,13 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(32.dp))
 
             ElevatedButton(
-                onClick = { openQRCodePairing() },
+                onClick = { openSignInPairing() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
                 Text(
-                    text = "Show QR Code",
+                    text = "Sign In to Pair",
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Scan the QR code with your phone's Google Messages app to pair your devices.",
+                text = "You'll see a pairing image to verify on your phone.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
