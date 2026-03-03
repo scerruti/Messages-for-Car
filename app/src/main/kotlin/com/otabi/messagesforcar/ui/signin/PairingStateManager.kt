@@ -1,4 +1,4 @@
-package com.otabi.messagesforcar.ui.qr
+package com.otabi.messagesforcar.ui.signin
 
 import android.content.Context
 import android.content.SharedPreferences

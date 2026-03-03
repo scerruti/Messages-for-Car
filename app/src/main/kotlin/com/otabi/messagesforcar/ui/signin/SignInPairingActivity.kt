@@ -11,22 +11,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
-import com.otabi.messagesforcar.automotive.AutomotiveHelper
 import com.otabi.messagesforcar.service.MessagesBackgroundService
 import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
-import com.otabi.messagesforcar.pairing.PairingStateManager
-import com.otabi.messagesforcar.pairing.PairingState
 import kotlinx.coroutines.launch
-import com.otabi.messagesforcar.ui.signin.PairingAuthScreen
 
 /**
  * Account sign-in based pairing activity.
@@ -43,7 +37,7 @@ class SignInPairingActivity : ComponentActivity() {
         // Enable WebView debugging for Messages for Web troubleshooting
         WebView.setWebContentsDebuggingEnabled(true)
 
-        // Isolate QR pairing debug session to a single foreground WebView.
+        // Isolate sign-in pairing debug session to a single foreground WebView.
         // The background service owns a hidden WebView and can create extra Chrome inspect targets.
         MessagesBackgroundService.stopService(this)
         
@@ -90,24 +84,7 @@ private fun SignInPairingActivityContent(
     val isCheckingPairing by pairingStateManager.collectIsCheckingPairingAsState()
     val scrollState = rememberScrollState()
     
-    var showQRCode by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    
-    // Handle pairing state changes
-    LaunchedEffect(pairingState) {
-        when (pairingState) {
-            PairingState.PAIRED -> {
-                showQRCode = false
-            }
-            PairingState.ERROR -> {
-                errorMessage = "Failed to check pairing status. Please try again."
-            }
-            else -> {
-                showQRCode = pairingStateManager.shouldShowQRCode()
-                errorMessage = null
-            }
-        }
-    }
     
     Scaffold(
         topBar = {
@@ -121,7 +98,7 @@ private fun SignInPairingActivityContent(
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -153,49 +130,25 @@ private fun SignInPairingActivityContent(
                         )
                     }
                     
-                    showQRCode -> {
-                        // QR Code pairing screen
+                    else -> {
+                        // Sign-in pairing screen
                         PairingAuthScreen(
                             modifier = Modifier.fillMaxWidth(),
                             onPairingComplete = onPairingComplete,
                             onRetry = {
                                 errorMessage = null
-                                kotlinx.coroutines.MainScope().launch {
-                                    pairingStateManager.checkPairingStatus()
-                                }
                             },
                             isLoading = isCheckingPairing,
                             errorMessage = errorMessage
                         )
                     }
-                    
-                    else -> {
-                        // Loading or checking state
-                        PairingLoadingScreen(
-                            pairingState = pairingState,
-                            onRetry = {
-                                kotlinx.coroutines.MainScope().launch {
-                                    pairingStateManager.checkPairingStatus()
-                                }
-                            }
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Automotive-specific information
-                if (AutomotiveHelper.isAutomotiveOS(LocalContext.current)) {
-                    AutomotivePairingInfo()
                 }
             }
             
             // Floating action for manual pairing check
             FloatingActionButton(
                 onClick = {
-                    kotlinx.coroutines.MainScope().launch {
-                        pairingStateManager.checkPairingStatus()
-                    }
+                    // Could trigger a refresh if needed
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -209,7 +162,7 @@ private fun SignInPairingActivityContent(
                     )
                 } else {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Refresh,
+                        imageVector = Icons.Default.Refresh,
                         contentDescription = "Check pairing status",
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -241,7 +194,7 @@ private fun PairingSuccessScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                    imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Success",
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.primary
@@ -272,83 +225,6 @@ private fun PairingSuccessScreen(
                     Text("Continue to Messages")
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PairingLoadingScreen(
-    pairingState: PairingState,
-    onRetry: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(48.dp),
-            color = MaterialTheme.colorScheme.primary
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = when (pairingState) {
-                PairingState.UNKNOWN -> "Checking pairing status..."
-                PairingState.EXPIRED -> "Reconnecting to Google Messages..."
-                else -> "Loading..."
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        
-        if (pairingState == PairingState.ERROR) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Button(onClick = onRetry) {
-                Text("Retry")
-            }
-        }
-    }
-}
-
-@Composable
-private fun AutomotivePairingInfo() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "🚗",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Automotive Safety",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "• QR code pairing is only available when parked\n" +
-                        "• Voice messages will be available while driving\n" +
-                        "• Notifications appear in your car's display\n" +
-                        "• Hands-free operation for safety",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
         }
     }
 }

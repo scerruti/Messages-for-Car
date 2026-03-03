@@ -1,4 +1,4 @@
-package com.otabi.messagesforcar.ui.qr
+package com.otabi.messagesforcar.ui.signin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -197,10 +197,24 @@ fun PairingAuthScreen(
                                                         var aria = ((candidates[i].getAttribute('aria-label') || '') + '').trim().toLowerCase();
                                                         var fullText = text + ' | ' + aria;
                                                         if (fullText.length > 2) {
-                                                            console.log('MessagesForCar: Button #' + i + ': "' + fullText.substring(0, 100) + '"');
+                                                            console.log('MessagesForCar: Button #' + i + ': "' + fullText.substring(0, 100) + '", Hidden: ' + (candidates[i].offsetParent === null));
                                                         }
-                                                        if (text.includes('sign in') || aria.includes('sign in')) {
-                                                            console.log('MessagesForCar: Found Sign in button. Clicking...');
+                                                        
+                                                        // Skip hidden elements
+                                                        if (candidates[i].offsetParent === null) {
+                                                            console.log('MessagesForCar: Button #' + i + ' is hidden, skipping');
+                                                            continue;
+                                                        }
+                                                        
+                                                        // Look for:
+                                                        // 1. "sign in" buttons
+                                                        // 2. "continue" buttons (for existing sessions)
+                                                        // 3. Buttons with "account" or "google" and clickable (for account selection in pairing flow)
+                                                        if (text.includes('sign in') || text.includes('continue') || 
+                                                            aria.includes('sign in') || aria.includes('continue') ||
+                                                            (text.includes('account') && text.includes('google')) ||
+                                                            (text.includes('account') && text.length > 10)) {
+                                                            console.log('MessagesForCar: Found authentication button. Clicking: ' + fullText);
                                                             candidates[i].click();
                                                             return true;
                                                         }
