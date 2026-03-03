@@ -191,9 +191,14 @@ fun PairingAuthScreen(
 
                                                 function tryClickSignIn() {
                                                     var candidates = document.querySelectorAll('button, div[role="button"], a');
+                                                    console.log('MessagesForCar: Found ' + candidates.length + ' button/link candidates');
                                                     for (var i = 0; i < candidates.length; i++) {
                                                         var text = ((candidates[i].textContent || candidates[i].innerText || '') + '').trim().toLowerCase();
                                                         var aria = ((candidates[i].getAttribute('aria-label') || '') + '').trim().toLowerCase();
+                                                        var fullText = text + ' | ' + aria;
+                                                        if (fullText.length > 2) {
+                                                            console.log('MessagesForCar: Button #' + i + ': "' + fullText.substring(0, 100) + '"');
+                                                        }
                                                         if (text.includes('sign in') || aria.includes('sign in')) {
                                                             console.log('MessagesForCar: Found Sign in button. Clicking...');
                                                             candidates[i].click();
@@ -215,6 +220,13 @@ fun PairingAuthScreen(
                                                     window.__messagesForCarMutationCount++;
                                                     if (window.__messagesForCarMutationCount % 50 === 0) {
                                                         console.log('MessagesForCar: DOM mutations observed: ' + window.__messagesForCarMutationCount);
+                                                    }
+                                                    // Try to find sign-in button on every mutation if not clicked yet
+                                                    if (!window.__messagesForCarSignInClicked) {
+                                                        if (tryClickSignIn()) {
+                                                            window.__messagesForCarSignInClicked = true;
+                                                            console.log('MessagesForCar: Sign-in initiated (from mutation)');
+                                                        }
                                                     }
                                                 });
                                                 observer.observe(document.documentElement || document.body, {

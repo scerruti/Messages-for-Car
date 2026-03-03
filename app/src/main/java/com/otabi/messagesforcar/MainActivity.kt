@@ -18,7 +18,7 @@ import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
 import com.otabi.messagesforcar.ui.screens.MainScreen
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
 import com.otabi.messagesforcar.pairing.PairingState
-import com.otabi.messagesforcar.ui.qr.QRCodePairingActivity
+import com.otabi.messagesforcar.ui.signin.SignInPairingActivity
 import com.otabi.messagesforcar.service.MessagesBackgroundService
 
 class MainActivity : ComponentActivity() {
@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openQRCodePairing() {
-        val intent = Intent(this, QRCodePairingActivity::class.java)
+        val intent = Intent(this, SignInPairingActivity::class.java)
         startActivity(intent)
     }
 

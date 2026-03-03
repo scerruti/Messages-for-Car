@@ -1,4 +1,4 @@
-package com.otabi.messagesforcar.ui.qr
+package com.otabi.messagesforcar.ui.signin
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -11,14 +11,14 @@ import org.junit.Before
 import org.junit.Assert.*
 
 /**
- * Instrumented tests for QR Code pairing functionality.
- * Tests the native QR code pairing screen and integration with preferences.
+ * Instrumented tests for sign-in based pairing functionality.
+ * Tests the account sign-in pairing screen and integration with preferences.
  */
 @RunWith(AndroidJUnit4::class)
-class QRCodePairingTest {
+class SignInPairingTest {
 
     @get:Rule
-    val composeTestRule = createAndroidComposeRule<QRCodePairingActivity>()
+    val composeTestRule = createAndroidComposeRule<SignInPairingActivity>()
 
     private lateinit var pairingPreferences: PairingPreferences
 

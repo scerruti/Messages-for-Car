@@ -1,4 +1,4 @@
-package com.otabi.messagesforcar.ui.qr
+package com.otabi.messagesforcar.ui.signin
 
 import android.os.Bundle
 import android.webkit.WebView
@@ -12,8 +12,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,14 +23,16 @@ import com.otabi.messagesforcar.automotive.AutomotiveHelper
 import com.otabi.messagesforcar.service.MessagesBackgroundService
 import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
+import com.otabi.messagesforcar.pairing.PairingStateManager
+import com.otabi.messagesforcar.pairing.PairingState
 import kotlinx.coroutines.launch
+import com.otabi.messagesforcar.ui.signin.PairingAuthScreen
 
 /**
- * Automotive-optimized QR Code Pairing Activity.
- * Provides a full-screen native QR code pairing experience that replaces
- * the unreliable WebView-based implementation.
+ * Account sign-in based pairing activity.
+ * Loads Google Messages for Web and guides user through account-based device pairing.
  */
-class QRCodePairingActivity : ComponentActivity() {
+class SignInPairingActivity : ComponentActivity() {
     
     private lateinit var pairingStateManager: PairingStateManager
     private lateinit var pairingPreferences: PairingPreferences
@@ -52,7 +52,7 @@ class QRCodePairingActivity : ComponentActivity() {
         
         setContent {
             MessagesForCarTheme {
-                QRCodePairingActivityContent(
+                SignInPairingActivityContent(
                     pairingStateManager = pairingStateManager,
                     onPairingComplete = { finishPairingFlow() },
                     onCancel = { finish() }
@@ -80,7 +80,7 @@ class QRCodePairingActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun QRCodePairingActivityContent(
+private fun SignInPairingActivityContent(
     pairingStateManager: PairingStateManager,
     onPairingComplete: () -> Unit,
     onCancel: () -> Unit
