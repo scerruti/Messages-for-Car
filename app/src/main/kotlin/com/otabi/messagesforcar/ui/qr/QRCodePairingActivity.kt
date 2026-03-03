@@ -1,6 +1,7 @@
 package com.otabi.messagesforcar.ui.qr
 
 import android.os.Bundle
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.otabi.messagesforcar.automotive.AutomotiveHelper
+import com.otabi.messagesforcar.service.MessagesBackgroundService
 import com.otabi.messagesforcar.ui.theme.MessagesForCarTheme
 import com.otabi.messagesforcar.data.preferences.PairingPreferences
 import kotlinx.coroutines.launch
@@ -38,6 +40,13 @@ class QRCodePairingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Enable WebView debugging for Messages for Web troubleshooting
+        WebView.setWebContentsDebuggingEnabled(true)
+
+        // Isolate QR pairing debug session to a single foreground WebView.
+        // The background service owns a hidden WebView and can create extra Chrome inspect targets.
+        MessagesBackgroundService.stopService(this)
+        
         pairingStateManager = PairingStateManager(this)
         pairingPreferences = PairingPreferences.getInstance(this)
         
@@ -50,11 +59,10 @@ class QRCodePairingActivity : ComponentActivity() {
                 )
             }
         }
-        
-        // Check initial pairing state
-        lifecycleScope.launch {
-            pairingStateManager.checkPairingStatus()
-        }
+
+        // Pairing activity should always start in manual pairing mode.
+        // Avoid heuristic auto-success states that can close the flow incorrectly.
+        pairingStateManager.updatePairingState(PairingState.UNPAIRED)
     }
     
     private fun finishPairingFlow() {
@@ -90,9 +98,6 @@ private fun QRCodePairingActivityContent(
         when (pairingState) {
             PairingState.PAIRED -> {
                 showQRCode = false
-                // Auto-complete after a short delay to show success state
-                kotlinx.coroutines.delay(2000)
-                onPairingComplete()
             }
             PairingState.ERROR -> {
                 errorMessage = "Failed to check pairing status. Please try again."
@@ -150,7 +155,7 @@ private fun QRCodePairingActivityContent(
                     
                     showQRCode -> {
                         // QR Code pairing screen
-                        QRCodePairingScreen(
+                        PairingAuthScreen(
                             modifier = Modifier.fillMaxWidth(),
                             onPairingComplete = onPairingComplete,
                             onRetry = {

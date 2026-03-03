@@ -66,7 +66,7 @@
         <!-- QR Code Pairing Activity for device pairing -->
         <activity
             android:name=".ui.qr.QRCodePairingActivity"
-            android:exported="false"
+            android:exported="true"
             android:theme="@style/Theme.MessagesForCar"
             android:screenOrientation="landscape"
             android:hardwareAccelerated="true" />

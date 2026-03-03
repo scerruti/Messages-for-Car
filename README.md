@@ -73,6 +73,101 @@ An Android Automotive messaging application that brings Google Messages for Web 
 - `VoiceActivity`: Voice input and speech recognition
 - `MessagingCarAppService`: Android Automotive Car App service
 - `MessagingWebView`: Customized WebView for Google Messages
+- `PairingAuthScreen`: Dual-mode pairing/auth screen (QR + account sign-in)
+
+### Pairing Flow Diagrams
+
+#### Pairing/Auth Flow (Sequence)
+
+```mermaid
+flowchart TD
+	A[User opens QRCodePairingActivity] --> B[PairingAuthScreen rendered]
+	B --> C[WebView loads https://messages.google.com/web]
+	C --> D[onPageFinished]
+	D --> E{Coordinator injected?}
+	E -- No --> F[Inject coordinator script once]
+	E -- Yes --> Z[Skip duplicate injection]
+
+	F --> G[MutationObserver starts]
+	G --> H[Try click auth action]
+	H --> I{Selected mode}
+	I -- QR --> J[Find and click Pair with QR]
+	I -- SIGN_IN --> K[Find and click Sign in]
+
+	J --> L[Watch DOM mutations]
+	K --> L
+	L --> M[Try capture QR from canvas/img]
+	M --> N{Data URL length >= threshold?}
+	N -- No --> L
+	N -- Yes --> O[Call Android JS interface onQRCodeFound]
+	O --> P[Decode Base64 -> Bitmap]
+	P --> Q[Render bitmap overlay in card]
+	Q --> R[User scans QR / continues pairing]
+
+	F --> S[Timeout fail-safe]
+	S --> T[Log timeout without crash]
+```
+
+#### Pairing/Auth Class Diagram
+
+```mermaid
+classDiagram
+	class QRCodePairingActivity {
+		+onCreate(Bundle)
+		+finishPairingFlow()
+	}
+
+	class PairingAuthScreen {
+		+PairingAuthScreen(modifier, onPairingComplete, onRetry, isLoading, errorMessage)
+		-authMode : PairingAuthMode
+		-hasCapturedQr : Boolean
+		-hasInjectedQrCoordinator : Boolean
+	}
+
+	class PairingStateManager {
+		+checkPairingStatus()
+		+markPairingSuccessful()
+		+shouldShowQRCode()
+	}
+
+	class PairingPreferences {
+		+markAsPaired(url)
+		+isPaired : Boolean
+	}
+
+	class MessagesBackgroundService {
+		+startService(context)
+		+stopService(context)
+		-setupWebView()
+	}
+
+	class WebView {
+		+loadUrl(url)
+		+evaluateJavascript(script, callback)
+		+addJavascriptInterface(obj, name)
+	}
+
+	class JSCoordinator {
+		+tryClickPairButton()
+		+tryCaptureQr()
+		+processDom(reason)
+	}
+
+	class JSInterface_messagesForCar {
+		+onQRCodeFound(dataUrl)
+	}
+
+	QRCodePairingActivity --> PairingAuthScreen : hosts
+	QRCodePairingActivity --> PairingStateManager : uses
+	QRCodePairingActivity --> PairingPreferences : persists state
+	QRCodePairingActivity --> MessagesBackgroundService : stops during QR debug
+
+	PairingAuthScreen --> WebView : embeds
+	PairingAuthScreen --> JSCoordinator : injects script
+	WebView --> JSInterface_messagesForCar : callback bridge
+	JSCoordinator --> JSInterface_messagesForCar : sends captured QR
+	PairingStateManager --> PairingPreferences : reads/writes
+```
 
 ### Security Features
 - Domain-restricted WebView navigation
