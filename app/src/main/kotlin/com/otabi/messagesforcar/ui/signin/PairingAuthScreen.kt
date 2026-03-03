@@ -3,6 +3,8 @@ package com.otabi.messagesforcar.ui.signin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -323,7 +325,7 @@ fun PairingAuthScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Action Button
+            // Action Button with icon
             Button(
                 onClick = onPairingComplete,
                 modifier = Modifier
@@ -331,6 +333,14 @@ fun PairingAuthScreen(
                     .height(56.dp), // Automotive-compliant touch target
                 enabled = !isLoading
             ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Complete pairing",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(end = 8.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
                 Text(
                     text = "Pairing Complete",
                     fontSize = 16.sp,
